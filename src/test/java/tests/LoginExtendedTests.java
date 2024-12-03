@@ -2,17 +2,21 @@ package tests;
 
 import helpers.CustomAllureListener;
 import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import models.lombok.LoginBodyLombokModel;
 import models.lombok.LoginResponseLombokModel;
+import models.lombok.MissingPasswordLombokModel;
 import models.pojo.LoginBodyModel;
 import models.pojo.LoginResponseModel;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static specs.LoginSpec.*;
 
 public class LoginExtendedTests {
     /*
@@ -22,6 +26,47 @@ public class LoginExtendedTests {
      3. Check "token" is "QpwL5tke4Pnpja7X4" and status code 200
     */
 
+@BeforeAll
+public static void setUp() {
+    RestAssured.baseURI = "https://reqres.in";
+}
+
+    @Test
+    void missingPasswordTest() {
+        LoginBodyLombokModel authData = new LoginBodyLombokModel();
+        authData.setEmail("eve.holt@reqres.in");
+
+        MissingPasswordLombokModel response = step("Make request", () ->
+                given(loginRequestSpec)
+                        .body(authData)
+.when()
+                        .post()
+.then()
+                        .spec(missingPasswordResponseSpec)
+                        .extract().as(MissingPasswordLombokModel.class));
+
+        step("Check response", () ->
+                assertEquals("Missing password", response.getError()));
+    }
+
+    @Test
+    void successfulLoginAllureWithSpecsTest() {
+        LoginBodyLombokModel authData = new LoginBodyLombokModel();
+        authData.setEmail("eve.holt@reqres.in");
+        authData.setPassword("cityslicka");
+
+        LoginResponseLombokModel response = step("Make request", () ->
+                given(loginRequestSpec)
+                        .body(authData)
+                .when()
+                        .post()
+                .then()
+                        .spec(loginResponseSpec)
+                        .extract().as(LoginResponseLombokModel.class));
+
+        step("Check response", () ->
+                assertEquals("QpwL5tke4Pnpja7X4", response.getToken()));
+    }
 
     @Test
     void successfulLoginAllureWithStepsTest() {
