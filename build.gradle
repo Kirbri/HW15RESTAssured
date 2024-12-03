@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
-    id ("io.freefair.lombok") version "8.11"
+    id 'io.qameta.allure' version '2.12.0'
+    id 'io.freefair.lombok' version '8.11'
 
 }
 
@@ -8,11 +9,29 @@ repositories {
     mavenCentral()
 }
 
+def restAssuredVersion = "5.5.0",
+    allureVersion = "2.29.0"
+
+allure {
+    report {
+        version.set(allureVersion)
+    }
+    adapter {
+        aspectjWeaver.set(true)
+        frameworks {
+            junit5 {
+                adapterVersion.set(allureVersion)
+            }
+        }
+    }
+}
+
 dependencies {
     testImplementation(
-            'io.rest-assured:rest-assured:5.5.0',
-            "io.rest-assured:json-schema-validator:5.5.0",
-            "org.junit.jupiter:junit-jupiter:5.11.3",
+            "io.rest-assured:rest-assured:$restAssuredVersion",
+            "io.rest-assured:json-schema-validator:$restAssuredVersion",
+            "io.qameta.allure:allure-rest-assured:$allureVersion",
+            'org.junit.jupiter:junit-jupiter:5.11.3',
             'org.slf4j:slf4j-simple:2.0.16'
     )
 }
